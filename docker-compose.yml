@@ -1,14 +1,20 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./Backend/db_init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - main_network
 
@@ -26,7 +32,7 @@ services:
 
   backend:
     build: ./backend
-    command: bash -c "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 django_project.wsgi"
+    command: ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 django_project.wsgi"]
     volumes:
       - ./backend:/app
     ports:
@@ -37,18 +43,20 @@ services:
       - db
     networks:
       - main_network
+    env_file:
+      - .env 
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/react_app:/app/react_app
+      - /app/react_app/node_modules
     ports:
       - "3000:3000"
     environment:
       - REACT_APP_API_URL=http://backend:8000
-    depends_on:
-      - backend
     networks:
       - main_network
 
