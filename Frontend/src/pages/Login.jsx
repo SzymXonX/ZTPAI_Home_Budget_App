@@ -1,20 +1,28 @@
 import { useState } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"; 
 import LoadingIndicator from "../components/LoadingIndicator";
-import "../styles/Login.css";
+import "../styles/LoginRegister.css";
+import "../styles/Global.css";
 
 //Zdjęcia
 import Logo from '../assets/logo.png';
-import OpenEye from '../assets/open_eye_password.png';
-import ClosedEye from '../assets/closed_eye_password.png';
+import { ImEye, ImEyeBlocked } from "react-icons/im";
+
 
 function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const navigate = useNavigate();
+
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    };
+    
+    document.title = "Login";
 
     const handleSubmit = async (e) => {
         setLoading(true);
@@ -39,9 +47,9 @@ function Login() {
                 </div>
             </div>
             <div className="right-container">
-                <div className="login-container">
+                <div className="form-container">
                     <form className="login" onSubmit={handleSubmit}>
-                        <label htmlFor="Username">Username</label>
+                        <label htmlFor="Username">nazwa użytkownika</label>
                         <input
                             id="Username"
                             type="text"
@@ -53,19 +61,16 @@ function Login() {
 
                         <label htmlFor="password">hasło</label>
                         <div className="password_image">
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <img
-                                src={ClosedEye}
-                                alt="eye"
-                                id="eye"
-                            />
+                            <input id="password" type={passwordVisible ? "text" : "password"} name="password" 
+                                value={password} onChange={(e) => setPassword(e.target.value)} required
+                                />
+                            <div className="eye-icon" onClick={togglePasswordVisibility}>
+                                {passwordVisible ? (
+                                    <ImEye id="eye"/> 
+                                ) : (
+                                    <ImEyeBlocked id="eye"/>
+                                )}
+                            </div>
                         </div>
 
                         {loading && <LoadingIndicator />}
@@ -73,9 +78,9 @@ function Login() {
                             zaloguj
                         </button>
                     </form>
-                    <a id="no-account-link" href="/register">
+                    <Link id="no-account-link" to="/register">
                         nie masz konta?
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
