@@ -1,15 +1,16 @@
 FROM node:18-alpine
 
-WORKDIR /app/react_app
+WORKDIR /app
 
-# Kopiuj z zachowaniem prawidłowych uprawnień dla Linuxa
-COPY ./react_app/package*.json ./
+COPY package*.json ./
+
 RUN npm install --silent
 
-COPY ./react_app ./
+COPY . .
 
-# Napraw uprawnienia
-RUN chown -R node:node /app/react_app
+RUN chown -R node:node /app
 USER node
 
-CMD ["npm", "start"]
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host"]
