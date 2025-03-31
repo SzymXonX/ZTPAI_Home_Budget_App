@@ -1,5 +1,4 @@
 body {
-    font-family: 'Anton SC', sans-serif;
     background-color: #211818;
     display: flex;
     justify-content: center;
@@ -35,21 +34,7 @@ body {
     margin: auto;
 }
 
-.login-container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 50px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 508px;
-    height: 490px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.register-container {
+.form-container {
     background-color: #fff;
     padding: 20px;
     border-radius: 50px;
@@ -63,26 +48,23 @@ body {
     align-items: center;
 }
 
-.login-container h2, .register-container h2 {
+h2 {
     margin-bottom: 20px;
     font-size: 24px;
 }
 
-.login-container input[type="text"],
-.login-container input[type="password"],
-.register-container input[type="text"],
-.register-container input[type="password"] {
+input {
     width: 468px;
     height: 55px;
     background-color: #D9D9D9;
     border-radius: 20px;
     padding: 0 10px;
-    margin: 10px 0;
+    margin: 0px 0px 10px 0px;
     border: 1px solid #ccc;
     font-size: 18px;
 }
 
-.login-container button, .register-container button {
+button {
     width: 292px;
     height: 63px;
     background-color: #056911;
@@ -93,23 +75,17 @@ body {
     font-size: 30px;
     text-transform: lowercase;
     margin-top: 20px;
-    font-family: 'Anton SC', sans-serif;
 }
 
-.login-container button:hover, .register-container button:hover {
+button:hover {
     background-color: #045a0e;
 }
 
-.login-container a, .register-container a {
+a {
     color: #000;
     text-decoration: none;
     display: block;
     margin-top: 10px;
-}
-
-#forgot-password-link {
-    font-size: 20px;
-    text-transform: lowercase;
 }
 
 #no-account-link, #login-link {
@@ -117,29 +93,33 @@ body {
     text-transform: lowercase;
 }
 
-.login-container a:hover, .register-container a:hover {
+a:hover {
     text-decoration: underline;
     color: #211818;
 }
 
-.login-container label, .register-container label {
+label {
     display: block;
     margin-bottom: 5px;
     font-size: 30px;
     color: #000;
     text-align: center;
-    font-family: 'Anton SC', sans-serif;
 }
 .password_image {
     position: relative;
 }
 
-#eye, #confirm-eye {
+#password{
+    margin: 0px;
+}
+
+#eye{
     position: absolute;
-    right: 10px;
-    top: 50%;
+    right: 15px;
+    top: 50% ;
     transform: translateY(-50%);
     cursor: pointer;
+    font-size: 30px;
 }
 
 @media (max-width: 1100px) {
@@ -166,35 +146,31 @@ body {
 }
 
 @media (max-width: 580px) {
-    .login-container, .register-container {
+    .form-container {
         width: 450px;
         height: auto;
     }
 
-    .login-container form, .register-container form{
+    form{
         width: 100%;
     }
 
-    .login-container input[type="text"],
-    .login-container input[type="password"],
-    .register-container input[type="text"],
-    .register-container input[type="password"] {
+    input {
         width: 91%;
         height: 45px;
         font-size: 15px;
     }
 
-    .login-container button, .register-container button {
+    button {
         width: 200px;
         height: 50px;
         font-size: 24px;
     }
 
-    .login-container label, .register-container label {
+    label {
         font-size: 24px;
     }
 
-    #forgot-password-link,
     #no-account-link,
     #login-link {
         font-size: 18px;
