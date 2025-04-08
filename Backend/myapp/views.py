@@ -1,10 +1,36 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
-from .serializers import UserSerializer
+from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
+    IncomesSerializer, ExpensesSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory
 
-# Create your views here.
+
+class IncomesCategoryView(generics.ListCreateAPIView):
+    serializer_class = IncomesCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return IncomesCategory.objects.filter(user=user)
+    
+    def perform_create(self, serializer):
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+        else:
+            print(serializer.errors)
+
+class IncomesCategoryDelete(generics.DestroyAPIView):
+    serializer_class = IncomesCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return IncomesCategory.objects.filter(user=user)
+    
+
+
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
