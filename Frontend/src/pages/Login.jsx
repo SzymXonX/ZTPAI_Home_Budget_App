@@ -31,6 +31,14 @@ function Login() {
             const res = await api.post("/api/token/", { username, password })
             localStorage.setItem(ACCESS_TOKEN, res.data.access);
             localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
+
+            // Ustawienie Authorization header tymczasowo, żeby pobrać dane użytkownika
+            const userRes = await api.get("/api/user-info/", {});
+
+            const isSuperUser = userRes.data.is_superuser;
+            localStorage.setItem("IS_SUPERUSER", JSON.stringify(isSuperUser)); // można też w stanie
+            console.log("isSuperUser", isSuperUser);
+
             navigate("/");
         } catch (error) {
             alert("Błędne dane logowania. Sprawdź swoje dane i spróbuj ponownie.");
