@@ -1,0 +1,69 @@
+/* Styl dla navbar */
+body {
+    background-color: #202020;  /* Ustawienie koloru tła dla całej strony */
+    margin: 0;  /* Usunięcie domyślnych marginesów */
+    font-family: 'Anton SC', sans-serif;  /* Ustawienie domyślnej czcionki */
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 96px;
+    position: fixed;  /* Ustawienie nawigacji jako stałej u góry */
+    left: 0;
+    top: 0;
+    width: 100%;  /* Ustawienie szerokości na 100%, by navbar zajmował całą szerokość */
+    background: #211818;
+    z-index: 1000;  /* Zapewnia, że navbar będzie zawsze na wierzchu */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo span {
+    font-size: 60px;
+    font-family: 'Jua', sans-serif;
+}
+
+.logo img {
+    height: 100px;
+    margin-right: 10px;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    margin-right: 40px;
+    padding: 0;
+    
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 40px;
+    font-family: 'Anton SC', sans-serif;
+    
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    text-decoration: underline;
+    color: #909090;
+}
+
+/* Styl dla głównej zawartości strony */
+main {
+    padding-top: 96px; /* Dodanie odpowiedniego odstępu na górze, aby zawartość nie była przykryta przez navbar */
+    color:#ffffff;
+}
