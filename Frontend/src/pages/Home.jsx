@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState, useCallback } from 'react';
 import api from "../api";
 
 import "../styles/Home.css";
@@ -10,34 +10,65 @@ function Home() {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [categories, setCategories] = useState({ expenses: [], incomes: [] });
+  const [expandedTransactionId, setExpandedTransactionId] = useState(null);
   const [formData, setFormData] = useState({
+    date: today.toISOString().split('T')[0],
     amount: '',
     category: '',
     description: '',
     type: 'expense'
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
 
-  useEffect(() => {
-    fetchData();
-  }, [month, year]);
-
-  const fetchData = async () => {
+  const fetchSummaryData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const [expensesRes, incomesRes, summaryRes, categoriesRes] = await Promise.all([
-        axios.get(`/api/expenses/?month=${month}&year=${year}`),
-        axios.get(`/api/incomes/?month=${month}&year=${year}`),
-        axios.get(`/api/summary/?month=${month}&year=${year}`),
-        axios.get('/api/categories/')
-      ]);
-
-      setExpenses(expensesRes.data);
-      setIncomes(incomesRes.data);
-      setSummary(summaryRes.data);
-      setCategories(categoriesRes.data);
-    } catch (error) {
-      console.error(error);
+      const API_URL = `/api/summary/${year}/${month}/`;
+      const response = await api.get(API_URL);
+      setSummary(response.data);
+    } catch (err) {
+      console.error("Błąd podczas pobierania podsumowania:", err);
+      if (err.response && err.response.status === 404) {
+        console.log(`Brak podsumowania dla ${month}/${year}. Ustawiam wartości na 0.`);
+        setSummary({ total_income: 0, total_expense: 0, balance: 0 });
+      } else {
+        setError("Nie udało się załadować podsumowania. Spróbuj ponownie.");
+        setSummary({ total_income: 0, total_expense: 0, balance: 0 });
+      }
+    } finally {
+      setLoading(false);
     }
+  }, [year, month, setSummary, setLoading, setError]);
+
+  useEffect(() => {
+    fetchSummaryData();
+  }, [fetchSummaryData]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response1 = await api.get('/api/expenses/categories/');
+        const response2 = await api.get('/api/incomes/categories/');
+        setCategories({ expenses: response1.data, incomes: response2.data });
+      } catch (err) {
+        console.error("Błąd podczas pobierania kategorii:", err);
+        setError("Nie udało się załadować kategorii. Spróbuj ponownie.");
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleTypeChange = (newType) => {
+    setFormData(prevFormData => ({
+      ...prevFormData, 
+      type: newType,
+      category: '',
+    }));
   };
 
   const handleMonthChange = (direction) => {
@@ -46,140 +77,251 @@ function Home() {
     setYear(newDate.getFullYear());
   };
 
-  const handleSubmit = async (e) => {
+  const handleAddTransaction = async (e) => {
     e.preventDefault();
-    const endpoint = formData.type === 'expense' ? '/api/expenses/' : '/api/incomes/';
+
+    setLoading(true);
+    setError(null);
+
     try {
-      await axios.post(endpoint, {
-        ...formData,
-        date: `${year}-${String(month).padStart(2, '0')}-01T00:00:00Z`
+      const transactionData = {
+        date: formData.date,
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        description: formData.description,
+      };
+
+      let response;
+      console.log("Dodawanie transakcji:", transactionData);
+      if (formData.type === 'expense') {
+        response = await api.post('/api/expenses/', transactionData);
+        console.log("Wydatek dodany pomyślnie:", response.data);
+      } else if (formData.type === 'income') {
+        response = await api.post('/api/incomes/', transactionData);
+        console.log("Przychód dodany pomyślnie:", response.data);
+      } else {
+        setError("Nieprawidłowy typ transakcji.");
+        setLoading(false);
+        return;
+      }
+
+      setFormData({
+        date: today.toISOString().split('T')[0],
+        amount: '',
+        category: '',
+        description: '',
+        type: formData.type 
       });
-      fetchData();
-      setFormData({ amount: '', category: '', description: '', type: formData.type });
-    } catch (error) {
-      console.error(error);
+
+      await fetchSummaryData();
+      await fetchTransactionsData();
+
+    } catch (err) {
+      console.error("Błąd podczas dodawania transakcji:", err);
+      if (err.response) {
+        setError(`Błąd: ${err.response.data.detail || JSON.stringify(err.response.data)}`);
+      } else if (err.request) {
+        setError("Brak odpowiedzi z serwera. Sprawdź połączenie.");
+      } else {
+        setError("Wystąpił nieoczekiwany błąd.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (id, type) => {
+  const fetchTransactionsData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      await axios.delete(`/api/${type === 'expense' ? 'expenses' : 'incomes'}/${id}/`);
-      fetchData();
-    } catch (error) {
-      console.error(error);
+      const expensesResponse = await api.get(`/api/expenses/${year}/${month}/`);
+      setExpenses(expensesResponse.data);
+
+      const incomesResponse = await api.get(`/api/incomes/${year}/${month}/`);
+      setIncomes(incomesResponse.data);
+
+    } catch (err) {
+      console.error("Błąd podczas pobierania transakcji:", err);
+      if (err.response && err.response.status === 404) {
+        console.log(`Brak transakcji dla ${month}/${year}.`);
+        setExpenses([]);
+        setIncomes([]);
+      } else {
+        setError("Nie udało się załadować transakcji. Spróbuj ponownie.");
+        setExpenses([]);
+        setIncomes([]);
+      }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [year, month, setExpenses, setIncomes, setLoading, setError]);
+
+  useEffect(() => {
+    fetchTransactionsData();
+  }, [fetchTransactionsData]);
+
+  const toggleTransactionDetails = (idToToggle) => {
+        setExpenses(prevExpenses =>
+            prevExpenses.map(expense =>
+                expense.id === idToToggle
+                    ? { ...expense, isDetailsVisible: !expense.isDetailsVisible }
+                    : { ...expense, isDetailsVisible: false }
+            )
+        );
+
+        setIncomes(prevIncomes =>
+            prevIncomes.map(income =>
+                income.id === idToToggle
+                    ? { ...income, isDetailsVisible: !income.isDetailsVisible } 
+                    : { ...income, isDetailsVisible: false }
+            )
+        );
+    };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-row">
-        <div className="summary-container">
-          <div className="date-selector">
-            <button onClick={() => handleMonthChange(-1)}>&lt;</button>
-            <span>{`${year} ${new Date(year, month - 1).toLocaleString('pl-PL', { month: 'long' })}`}</span>
-            <button onClick={() => handleMonthChange(1)}>&gt;</button>
+    <div className="main-app-content">
+      <div className="dashboard-container">
+        <div className="dashboard-row">
+          <div className="summary-container">
+            <div className="date-selector">
+              <button onClick={() => handleMonthChange(-1)}>&lt;</button>
+              <span>{`${year} ${new Date(year, month - 1).toLocaleString('pl-PL', { month: 'long' })}`}</span>
+              <button onClick={() => handleMonthChange(1)}>&gt;</button>
+            </div>
+
+            <div className="summary-items">
+              <div className="summary-item">
+                <span id='total_expense'>wydatki</span>
+                <input readOnly value={`- ${summary.total_expense} zł`} />
+              </div>
+              <div className="summary-item">
+                <span id='total_income'>przychody</span>
+                <input readOnly value={`${summary.total_income} zł`} />
+              </div>
+              <div className="summary-item">
+                <span id='total_balance'>budżet</span>
+                <input readOnly value={`${summary.balance} zł`} />
+              </div>
+            </div>
           </div>
 
-          <div className="summary-items">
-            <div className="summary-item">
-              <span>wydatki</span>
-              <input readOnly value={`${summary.total_expense.toFixed(2)} zł`} />
-            </div>
-            <div className="summary-item">
-              <span>przychody</span>
-              <input readOnly value={`${summary.total_income.toFixed(2)} zł`} />
-            </div>
-            <div className="summary-item">
-              <span>budżet</span>
-              <input readOnly value={`${summary.balance.toFixed(2)} zł`} />
-            </div>
-          </div>
-        </div>
+          <form className="add_transaction_form" onSubmit={handleAddTransaction}>
+            <div className="add_transaction_content">
+              <div className="form_header">
+                <button type="button" onClick={() => handleTypeChange('expense')} className={formData.type === 'expense' ? 'active' : ''}>wydatek</button>
+                <button type="button" onClick={() => handleTypeChange('income')} className={formData.type === 'income' ? 'active' : ''}>przychód</button>
+              </div>
+              <div className="form_row">
+                <div className="form_group">
+                  <label>data</label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date || today.toISOString().split('T')[0]}
+                    onChange={e => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
+                </div>
 
-        <form onSubmit={handleSubmit} className="form-container">
-          <div className="form-content">
-            <div className="form-row">
-              <div className="form-header">
-                <button type="button" onClick={() => setFormData({ ...formData, type: 'expense' })} className={formData.type === 'expense' ? 'active' : ''}>wydatek</button>
-                <button type="button" onClick={() => setFormData({ ...formData, type: 'income' })} className={formData.type === 'income' ? 'active' : ''}>przychód</button>
+                <div className="form_group">
+                  <label>kwota</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>kwota</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={e => setFormData({ ...formData, amount: e.target.value })}
+              <div className="form_group">
+                <label>kategoria</label>
+                <select
+                  value={formData.category}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
                   required
+                >
+                  <option value=""></option>
+                  {(formData.type === 'expense' ? categories.expenses : categories.incomes).map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.category}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form_group description">
+                <label>opis</label>
+                <textarea
+                  type="text"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
+
+              <button type="submit">dodaj</button>
             </div>
-
-            <div className="form-group">
-              <label>Kategoria</label>
-              <select
-                value={formData.category}
-                onChange={e => setFormData({ ...formData, category: e.target.value })}
-              >
-                {(formData.type === 'expense' ? categories.expenses : categories.incomes).map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.category}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>opis</label>
-              <input
-                type="text"
-                value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
-              />
-            </div>
-
-            <button type="submit">dodaj</button>
-          </div>
-        </form>
-      </div>
-
-      <div className="transactions-container">
-        <div className="expenses-container">
-          <h2>Wydatki</h2>
-          <div className="transactions-list">
-            {expenses.length > 0 ? expenses.map(exp => (
-              <div className="transaction" key={exp.id}>
-                <span>{exp.category_name || exp.category}</span>
-                <span className="negative">-{Number(exp.amount).toFixed(2)} zł</span>
-                <span>{new Date(exp.date).toLocaleDateString()}</span>
-                <div className="transaction-details">
-                  <p>{exp.description}</p>
-                  <button onClick={() => handleDelete(exp.id, 'expense')}>Usuń</button>
-                </div>
-              </div>
-            )) : <p>Brak wydatków w tym miesiącu.</p>}
-          </div>
+          </form>
         </div>
-
-        <div className="incomes-container">
-          <h2>Przychody</h2>
-          <div className="transactions-list">
-            {incomes.length > 0 ? incomes.map(inc => (
-              <div className="transaction" key={inc.id}>
-                <span>{inc.category_name || inc.category}</span>
-                <span className="positive">+{Number(inc.amount).toFixed(2)} zł</span>
-                <span>{new Date(inc.date).toLocaleDateString()}</span>
-                <div className="transaction-details">
-                  <p>{inc.description}</p>
-                  <button onClick={() => handleDelete(inc.id, 'income')}>Usuń</button>
+        <div className="dashboard-row">
+          <div className="expenses-container">
+            <h2 className="section-title" id='expenses-title'>wydatki</h2>
+            <div className="transactions-list" id="expenses-list">
+              {expenses.length > 0 ? (expenses.map(expense => (
+                <div className="transaction" key={expense.id} onClick={() => toggleTransactionDetails(expense.id)} >
+                  <div className="transaction-summary-row">
+                    <span className="transaction-category">
+                      {expense.category_name}
+                    </span>
+                    <span className="transaction-amount negative">
+                      -{Number(expense.amount).toFixed(2).replace('.', ',')} zł
+                    </span>
+                  </div>
+                  <span className="transaction-date">
+                    {new Date(expense.date).toLocaleDateString('pl-PL')}
+                  </span>
+                  <div className={`transaction-details ${expense.isDetailsVisible ? 'visible' : ''}`}>
+                    <textarea className="transaction-description" disabled>{expense.description}</textarea>
+                    <button className="delete-button" onClick={(e) => deleteTransaction(e, expense.id, 'expense')} >
+                      Usuń
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )) : <p>Brak przychodów w tym miesiącu.</p>}
+              ))) : (<p className="no-transactions">Brak wydatków w tym miesiącu.</p>)
+              }
+            </div>
+          </div>
+          <div className="incomes-container">
+            <h2 className="section-title" id='incomes-title'>przychody</h2>
+            <div className="transactions-list" id="income-list">
+              {incomes.length > 0 ? (incomes.map(income => (
+                <div className="transaction" key={income.id} onClick={() => toggleTransactionDetails(income.id)} >
+                  <div className="transaction-summary-row">
+                    <span className="transaction-category">
+                      {income.category_name}
+                    </span>
+                    <span className="transaction-amount positive">
+                      +{Number(income.amount).toFixed(2).replace('.', ',')} zł
+                    </span>
+                  </div>
+                  <span className="transaction-date">
+                    {new Date(income.date).toLocaleDateString('pl-PL')}
+                  </span>
+                  <div className={`transaction-details ${income.isDetailsVisible ? 'visible' : ''}`}>
+                    <textarea className="transaction-description" disabled>{income.description}</textarea>
+                    <button className="delete-button" onClick={(e) => deleteTransaction(e, income.id, 'income')} >
+                      Usuń
+                    </button>
+                  </div>
+                </div>
+              ))) : (<p className="no-transactions">Brak przychodów w tym miesiącu.</p>)
+              }
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 
 export default Home;
