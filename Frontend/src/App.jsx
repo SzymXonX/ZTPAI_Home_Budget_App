@@ -35,7 +35,7 @@ function App() {
         <Route path="/register" element={<RegisterAndLogout />} />
 
         <Route path="/" element={<ProtectedRoute> <Layout/> </ProtectedRoute>} >
-          <Route path="/main" element={<ProtectedRoute> <Home /> </ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute> <Home /> </ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute> <Categories /> </ProtectedRoute>} />
           <Route path="/summary" element={<ProtectedRoute> <Summary /> </ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute> <Settings /> </ProtectedRoute>} />
