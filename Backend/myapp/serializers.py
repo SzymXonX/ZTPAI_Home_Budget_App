@@ -49,9 +49,14 @@ class ExpensesCategorySerializer(serializers.ModelSerializer):
 
     
 class IncomesSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.category', read_only=True)
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=IncomesCategory.objects.all()
+    )
+    
     class Meta:
         model = Incomes
-        fields = ['id', 'user', 'category', 'amount', 'description', 'date']
+        fields = ['id', 'user', 'category', 'category_name', 'amount', 'description', 'date']
         extra_kwargs = {'user': {'read_only': True}}
 
     def create(self, validated_data):
@@ -68,9 +73,14 @@ class IncomesSerializer(serializers.ModelSerializer):
         return instance
     
 class ExpensesSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.category', read_only=True)
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=ExpensesCategory.objects.all()
+    )
+    
     class Meta:
         model = Expenses
-        fields = ['id', 'user', 'category', 'amount', 'description', 'date']
+        fields = ['id', 'user', 'category', 'category_name', 'amount', 'description', 'date']
         extra_kwargs = {'user': {'read_only': True}}
 
     def create(self, validated_data):
@@ -91,5 +101,5 @@ class ExpensesSerializer(serializers.ModelSerializer):
 class SummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Summary
-        fields = ['id', 'user', 'total_income', 'total_expense', 'balance']
+        fields = ['id', 'user', 'total_income', 'total_expense', 'balance', 'year', 'month']
         extra_kwargs = {'user': {'read_only': True}}
