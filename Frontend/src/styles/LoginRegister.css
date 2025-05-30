@@ -34,12 +34,11 @@ body {
     margin: auto;
 }
 
-.form-container {
+.formLogin {
     background-color: #fff;
     padding: 20px;
     border-radius: 50px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 508px;
     height: auto;
     text-align: center;
     display: flex;
@@ -53,7 +52,7 @@ h2 {
     font-size: 24px;
 }
 
-input {
+.formLogin input {
     width: 468px;
     height: 55px;
     background-color: #D9D9D9;
@@ -64,7 +63,7 @@ input {
     font-size: 18px;
 }
 
-button {
+#login-button {
     width: 292px;
     height: 63px;
     background-color: #056911;
@@ -77,7 +76,7 @@ button {
     margin-top: 20px;
 }
 
-button:hover {
+#login-button:hover {
     background-color: #045a0e;
 }
 
@@ -98,13 +97,14 @@ a:hover {
     color: #211818;
 }
 
-label {
+.right-container label {
     display: block;
     margin-bottom: 5px;
     font-size: 30px;
     color: #000;
     text-align: center;
 }
+
 .password_image {
     position: relative;
 }
@@ -122,7 +122,7 @@ label {
     font-size: 30px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1270px) {
     .container {
         flex-direction: column;
     }
@@ -145,38 +145,39 @@ label {
     }
 }
 
-@media (max-width: 580px) {
-    .form-container {
-        width: 450px;
+@media (max-width: 560px) {
+    .formLogin{
+        width: 90%;
+    }
+
+    .login{
+        width: 100%;
+    }
+    .formLogin input {
+        width: 90%;
+        font-size: 12px;
+        height: 40px;
+    }
+    .formLogin label{
+        font-size: 24px;
+    }
+    #eye {
+        right: 20px;
+        font-size: 22px;
+    }
+    #login-button {
+        width: 60%;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    #no-account-link, #login-link {
+        font-size: 16px;
+    }
+
+    .image-container img {
+        width: 150px;
         height: auto;
     }
 
-    form{
-        width: 100%;
-    }
-
-    input {
-        width: 91%;
-        height: 45px;
-        font-size: 15px;
-    }
-
-    button {
-        width: 200px;
-        height: 50px;
-        font-size: 24px;
-    }
-
-    label {
-        font-size: 24px;
-    }
-
-    #no-account-link,
-    #login-link {
-        font-size: 18px;
-    }
-
-    #eye, #confirm-eye {
-        right: 20px;
-    }
 }

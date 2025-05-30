@@ -7,7 +7,7 @@ import "../styles/LoginRegister.css";
 import "../styles/Global.css";
 
 //Zdjęcia
-import Logo from '../assets/logo.png';
+import Logo from '../assets/logo_bez_tla.png';
 import { ImEye, ImEyeBlocked } from "react-icons/im";
 
 function Register() {
@@ -47,7 +47,7 @@ function Register() {
                 </div>
             </div>
             <div className="right-container">
-                <div className="form-container">
+                <div className="formLogin">
                     <form className="login" onSubmit={handleSubmit}>
                         <label htmlFor="firstName">imię</label>
                         <input id="firstName" type="text" name="firstName"

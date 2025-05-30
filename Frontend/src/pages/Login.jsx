@@ -7,7 +7,7 @@ import "../styles/LoginRegister.css";
 import "../styles/Global.css";
 
 //Zdjęcia
-import Logo from '../assets/logo.png';
+import Logo from '../assets/logo_bez_tla.png';
 import { ImEye, ImEyeBlocked } from "react-icons/im";
 
 
@@ -32,11 +32,10 @@ function Login() {
             localStorage.setItem(ACCESS_TOKEN, res.data.access);
             localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
 
-            // Ustawienie Authorization header tymczasowo, żeby pobrać dane użytkownika
             const userRes = await api.get("/api/user-info/", {});
 
             const isSuperUser = userRes.data.is_superuser;
-            localStorage.setItem("IS_SUPERUSER", JSON.stringify(isSuperUser)); // można też w stanie
+            localStorage.setItem("IS_SUPERUSER", JSON.stringify(isSuperUser));
             console.log("isSuperUser", isSuperUser);
 
             navigate("/");
@@ -48,50 +47,51 @@ function Login() {
     };
 
     return (
-        <div className="container">
-            <div className="left-container">
-                <div className="image-container">
-                    <img src={Logo} alt="Logo" />
+            <div className="container">
+                <div className="left-container">
+                    <div className="image-container">
+                        <img src={Logo} alt="Logo" />
+                    </div>
                 </div>
-            </div>
-            <div className="right-container">
-                <div className="form-container">
-                    <form className="login" onSubmit={handleSubmit}>
-                        <label htmlFor="Username">nazwa użytkownika</label>
-                        <input
-                            id="Username"
-                            type="text"
-                            name="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
+                <div className="right-container">
+                    <div className="formLogin">
+                        <form className="login" onSubmit={handleSubmit}>
+                            <label htmlFor="Username">nazwa użytkownika</label>
+                            <input
+                                id="Username"
+                                type="text"
+                                name="username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
 
-                        <label htmlFor="password">hasło</label>
-                        <div className="password_image">
-                            <input id="password" type={passwordVisible ? "text" : "password"} name="password" 
-                                value={password} onChange={(e) => setPassword(e.target.value)} required
-                                />
-                            <div className="eye-icon" onClick={togglePasswordVisibility}>
-                                {passwordVisible ? (
-                                    <ImEye id="eye"/> 
-                                ) : (
-                                    <ImEyeBlocked id="eye"/>
-                                )}
+                            <label htmlFor="password">hasło</label>
+                            <div className="password_image">
+                                <input id="password" type={passwordVisible ? "text" : "password"} name="password" 
+                                    value={password} onChange={(e) => setPassword(e.target.value)} required
+                                    />
+                                <div className="eye-icon" onClick={togglePasswordVisibility}>
+                                    {passwordVisible ? (
+                                        <ImEye id="eye"/> 
+                                    ) : (
+                                        <ImEyeBlocked id="eye"/>
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                        {loading && <LoadingIndicator />}
-                        <button id="login-button" type="submit">
-                            zaloguj
-                        </button>
-                    </form>
-                    <Link id="no-account-link" to="/register">
-                        nie masz konta?
-                    </Link>
+                            {loading && <LoadingIndicator />}
+                            <button id="login-button" type="submit">
+                                zaloguj
+                            </button>
+                        </form>
+                        <Link id="no-account-link" to="/register">
+                            nie masz konta?
+                        </Link>
+                    </div>
                 </div>
             </div>
-        </div>
+
     );
 }
 
