@@ -22,7 +22,10 @@ class Incomes(models.Model):
     category = models.ForeignKey(IncomesCategory, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    date = models.DateTimeField()
+    date = models.DateField()
+
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.user.username} - {self.category.category} - {self.amount} - {self.date}"
@@ -32,16 +35,24 @@ class Expenses(models.Model):
     category = models.ForeignKey(ExpensesCategory, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    date = models.DateTimeField()
+    date = models.DateField()
+    
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.user.username} - {self.category.category} - {self.amount} - {self.date}"
     
 class Summary(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='summary', unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='summary')
+    year = models.IntegerField()
+    month = models.IntegerField()
     total_income = models.DecimalField(max_digits=10, decimal_places=2)
     total_expense = models.DecimalField(max_digits=10, decimal_places=2)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('user', 'year', 'month')
 
     def __str__(self):
         return f"{self.user.username} - {self.total_income} - {self.total_expense} - {self.balance}"
