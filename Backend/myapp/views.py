@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
     IncomesSerializer, ExpensesSerializer, SummarySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -80,13 +81,23 @@ class IncomesView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Incomes.objects.filter(user=user)
+        queryset = Incomes.objects.filter(user=user)
+
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+
+        if year and month:
+            queryset = queryset.filter(date__year=year, date__month=month)
+
+        return queryset.order_by('-date')
+    
     
     def perform_create(self, serializer):
         if serializer.is_valid():
             serializer.save(user=self.request.user)
         else:
             print(serializer.errors)
+
 class IncomesDelete(generics.DestroyAPIView):
     serializer_class = IncomesSerializer
     permission_classes = [IsAuthenticated]
@@ -103,13 +114,22 @@ class ExpensesView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Expenses.objects.filter(user=user)
+        queryset = Expenses.objects.filter(user=user)
+
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        
+        if year and month:
+            queryset = queryset.filter(date__year=year, date__month=month)
+
+        return queryset.order_by('-date')
     
     def perform_create(self, serializer):
         if serializer.is_valid():
             serializer.save(user=self.request.user)
         else:
             print(serializer.errors)
+
 class ExpensesDelete(generics.DestroyAPIView):
     serializer_class = ExpensesSerializer
     permission_classes = [IsAuthenticated]
@@ -127,15 +147,25 @@ class SummaryView(generics.RetrieveAPIView):
         user = self.request.user
         return Summary.objects.filter(user=user)
 
-    def get(self, request, *args, **kwargs):
-        year = kwargs.get('year')
-        month = kwargs.get('month')
+    def get(self, request, year, month, format=None):
+        user = request.user
+        
+        summary = Summary.objects.filter(
+            user=user,
+            year=year,
+            month=month 
+        ).first()
 
-        if year and month:
-            queryset = self.get_queryset().filter(date__year=year, date__month=month)
+        if summary:
+            serializer = SummarySerializer(summary)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            queryset = self.get_queryset()
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+            return Response({
+                'message': 'No summary found for the given year and month.',
+                'year': year,
+                'month': month,
+                'total_income': '0.00',
+                'total_expense': '0.00',
+                'balance': '0.00'
+            }, status=status.HTTP_404_NOT_FOUND)
 
