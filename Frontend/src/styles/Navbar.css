@@ -1,8 +1,7 @@
-/* Styl dla navbar */
 body {
-    background-color: #202020;  /* Ustawienie koloru tła dla całej strony */
-    margin: 0;  /* Usunięcie domyślnych marginesów */
-    font-family: 'Anton SC', sans-serif;  /* Ustawienie domyślnej czcionki */
+    background-color: #202020; 
+    margin: 0; 
+    font-family: 'Anton SC', sans-serif; 
 }
 
 .navbar {
@@ -11,25 +10,26 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     height: 96px;
-    position: fixed;  /* Ustawienie nawigacji jako stałej u góry */
+    position: fixed; 
     left: 0;
     top: 0;
-    width: 100%;  /* Ustawienie szerokości na 100%, by navbar zajmował całą szerokość */
+    width: 100%; 
     background: #211818;
-    z-index: 1000;  /* Zapewnia, że navbar będzie zawsze na wierzchu */
+    z-index: 1000; 
 }
 
-.logo {
+.logo-navbar {
     display: flex;
     align-items: center;
+    color: #ffffff;
 }
 
-.logo span {
+.logo-navbar span {
     font-size: 60px;
     font-family: 'Jua', sans-serif;
 }
 
-.logo img {
+.logo-navbar img {
     height: 100px;
     margin-right: 10px;
 }
@@ -45,7 +45,9 @@ body {
 }
 
 .nav-links li {
-    display: inline;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
 .nav-links a {
@@ -62,8 +64,70 @@ body {
     color: #909090;
 }
 
-/* Styl dla głównej zawartości strony */
-main {
-    padding-top: 96px; /* Dodanie odpowiedniego odstępu na górze, aby zawartość nie była przykryta przez navbar */
-    color:#ffffff;
+.navBurger{
+	position: fixed;
+	top: 0;
+	right: -300px;
+	width: 250px;
+	height: 100%;
+	background-color: #211818;
+	box-shadow: -5px 0 10px rgba(0, 0, 0, 0.2);
+	transition: right 0.3s ease-in-out;
+	padding-top: 60px;
+	z-index: 99;
+}
+
+.navBurger.active{ right: 0; }
+
+.navBurger ul{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.navBurger ul li{
+	padding: 15px;
+	text-align: center;
+}
+
+.navBurger ul li a{
+	text-decoration: none;
+	color: #ffffff;
+	font-size: 22px;
+	display: block;
+	padding: 10px;
+	transition: background-color 0.3s ease, color 0.3s ease;
+	font-family: 'Anton SC', sans-serif;
+}
+
+.navBurger ul li a:hover, .navBurger ul li a.active{
+	text-decoration: underline;
+	color: #909090;
+}
+
+.iconBurger{
+	display: none;
+	cursor: pointer;
+	z-index: 100;
+    margin-right: 40px;
+}
+
+@media (max-width: 1450px){
+	.nav-links{ display: none; }
+	.iconBurger{ display: block; }
+}
+
+@media (max-width: 720px){
+    .navBurger{ width: 200px; }
+	.navBurger ul li a{ font-size: 18px; }
+}
+
+@media (max-width: 500px){
+    .logo-navbar img {
+        height: 65px;
+    }
+    .logo-navbar span {
+        font-size: 30px;
+    }
+
 }
