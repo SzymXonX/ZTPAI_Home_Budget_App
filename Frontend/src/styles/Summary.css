@@ -1,0 +1,28 @@
+.summary-app-content {
+  margin-top: 120px;
+  padding-bottom: 80px;
+    
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+    
+  padding-left: 15px;
+  padding-right: 15px;
+
+  box-sizing: border-box;
+
+}
+
+
+
+#summary-date-selector {
+  margin-bottom: 0px;
+}
+
+#summary-container{
+  width: 400px;
+}
+
+.categories-amount{
+  white-space: nowrap;
+}
