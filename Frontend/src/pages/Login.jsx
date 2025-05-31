@@ -33,6 +33,7 @@ function Login() {
             localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
 
             const userRes = await api.get("/api/user-info/", {});
+            console.log("userRes", userRes.data);
 
             const isSuperUser = userRes.data.is_superuser;
             localStorage.setItem("IS_SUPERUSER", JSON.stringify(isSuperUser));
