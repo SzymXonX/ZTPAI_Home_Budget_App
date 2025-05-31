@@ -20,4 +20,5 @@ urlpatterns = [
     path("summary/", views.SummaryView.as_view(), name="summary"),
     path("summary/<int:year>/<int:month>/", views.SummaryView.as_view(), name="summary_by_month"),
     
+    path("categories/summary/<int:year>/<int:month>/", views.MonthlySummaryView.as_view(), name="categories_summary_by_month"),
 ]
