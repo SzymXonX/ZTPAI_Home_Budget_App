@@ -1,0 +1,127 @@
+.categories-app-content {
+  margin-top: 120px;
+    
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+    
+  padding-left: 15px;
+  padding-right: 15px;
+
+  box-sizing: border-box;
+
+}
+
+.add_category_form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 400px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.add_category_content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+  width: 100%;
+}
+
+.add_category_form button[type="submit"] {
+  align-self: center;
+  width: 100%;
+  max-width: 200px;
+  height: 44px;
+  font-size: 20px;
+}
+
+.form_header button, .add_category_form button[type="submit"] {
+  background-color: #056911;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.form_header button:hover, .add_category_form button[type="submit"]:hover {
+  background-color: #044b0c;
+}
+
+.form_header button.active {
+  background-color: #044b0c;
+}
+
+
+.expenses-category-container, .incomes-category-container { 
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    color: black;
+    min-height: 300px;
+    font-family: 'Anton SC', sans-serif;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categories-list {
+    min-height: 200px;
+    border: 1px solid gray;
+    border-radius: 12px;
+    padding: 10px;
+    background: #f9f9f9;
+    
+}
+
+.no-categories {
+    font-family: 'Inter', sans-serif;
+    font-weight: bold;
+}
+
+.categories {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+  transition: background-color 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+}
+.categories-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; 
+  margin-top: 5px;
+}
+.categories span {
+  font-family: 'Inter', sans-serif;
+  word-break: break-word;
+}
+.categories:hover {
+  background-color: #f9f9f9;
+}
+
+
+@media (max-width: 500px){
+  .categories-list {
+    min-width: 200px;
+  }
+  .categories{
+    flex-direction: column;
+    align-items: flex-start;
+    align-items: center;
+  }
+  .categories-date{
+    order: -1;
+    padding-bottom: 3px;
+    width: 100%;
+    text-align: center;
+  }
+}
