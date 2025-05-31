@@ -79,7 +79,6 @@ function Home() {
 
   const handleAddTransaction = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError(null);
 
@@ -95,10 +94,8 @@ function Home() {
       console.log("Dodawanie transakcji:", transactionData);
       if (formData.type === 'expense') {
         response = await api.post('/api/expenses/', transactionData);
-        console.log("Wydatek dodany pomyślnie:", response.data);
       } else if (formData.type === 'income') {
         response = await api.post('/api/incomes/', transactionData);
-        console.log("Przychód dodany pomyślnie:", response.data);
       } else {
         setError("Nieprawidłowy typ transakcji.");
         setLoading(false);
@@ -161,51 +158,47 @@ function Home() {
   }, [fetchTransactionsData]);
 
   const toggleTransactionDetails = (idToToggle) => {
-        setExpenses(prevExpenses =>
-            prevExpenses.map(expense =>
-                expense.id === idToToggle
-                    ? { ...expense, isDetailsVisible: !expense.isDetailsVisible }
-                    : { ...expense, isDetailsVisible: false }
-            )
-        );
-
-        setIncomes(prevIncomes =>
-            prevIncomes.map(income =>
-                income.id === idToToggle
-                    ? { ...income, isDetailsVisible: !income.isDetailsVisible } 
-                    : { ...income, isDetailsVisible: false }
-            )
-        );
-    };
+    setExpenses(prevExpenses =>
+      prevExpenses.map(expense =>
+        expense.id === idToToggle
+          ? { ...expense, isDetailsVisible: !expense.isDetailsVisible }
+          : { ...expense, isDetailsVisible: false }
+      )
+    );
+    setIncomes(prevIncomes =>
+      prevIncomes.map(income =>
+        income.id === idToToggle
+          ? { ...income, isDetailsVisible: !income.isDetailsVisible } 
+          : { ...income, isDetailsVisible: false }
+      )
+    );
+  };
 
   const deleteTransaction = useCallback(async (e, id, type) => {
-        e.stopPropagation();
+    e.stopPropagation();
 
-        setLoading(true);
-        setError(null);
+    setLoading(true);
+    setError(null);
 
-        try {
-            const API_URL = type === 'expense' 
-                ? `/api/expenses/delete/${id}/` 
-                : `/api/incomes/delete/${id}/`;
-            
-            await api.delete(API_URL);
+    try {
+    const API_URL = type === 'expense' 
+      ? `/api/expenses/delete/${id}/` 
+      : `/api/incomes/delete/${id}/`;
+    
+    await api.delete(API_URL);
+    await fetchTransactionsData();
+    await fetchSummaryData();
 
-            console.log(`Transakcja ${type} o ID ${id} została usunięta.`);
-            
-            await fetchTransactionsData();
-            await fetchSummaryData();
-
-        } catch (err) {
-            console.error("Błąd podczas usuwania transakcji:", err);
-            setError("Nie udało się usunąć transakcji. Spróbuj ponownie.");
-            if (err.response) {
-                console.error("Odpowiedź serwera:", err.response.data);
-            }
-        } finally {
-            setLoading(false);
-        }
-    }, [fetchTransactionsData, fetchSummaryData, setLoading, setError]);
+    } catch (err) {
+      console.error("Błąd podczas usuwania transakcji:", err);
+      setError("Nie udało się usunąć transakcji. Spróbuj ponownie.");
+      if (err.response) {
+        console.error("Odpowiedź serwera:", err.response.data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchTransactionsData, fetchSummaryData, setLoading, setError]);
 
   return (
     <div className="main-app-content">
@@ -309,7 +302,7 @@ function Home() {
                     {new Date(expense.date).toLocaleDateString('pl-PL')}
                   </span>
                   <div className={`transaction-details ${expense.isDetailsVisible ? 'visible' : ''}`}>
-                    <textarea className="transaction-description" disabled>{expense.description}</textarea>
+                    <textarea className="transaction-description" disabled value={expense.description}></textarea>
                     <button className="delete-button" onClick={(e) => deleteTransaction(e, expense.id, 'expense')} >
                       Usuń
                     </button>
@@ -336,7 +329,7 @@ function Home() {
                     {new Date(income.date).toLocaleDateString('pl-PL')}
                   </span>
                   <div className={`transaction-details ${income.isDetailsVisible ? 'visible' : ''}`}>
-                    <textarea className="transaction-description" disabled>{income.description}</textarea>
+                    <textarea className="transaction-description" disabled value={income.description}></textarea>
                     <button className="delete-button" onClick={(e) => deleteTransaction(e, income.id, 'income')} >
                       Usuń
                     </button>
@@ -351,6 +344,5 @@ function Home() {
     </div>
   );
 }
-
 
 export default Home;
