@@ -92,7 +92,7 @@ html, body {
 }
 
 .summary-item span {
-  font-size: 1.5em;
+  font-size: 30px;
 }
 
 .summary-item input {
@@ -101,9 +101,9 @@ html, body {
   background-color: #f8f9fa;
   border: none;
   color: #212529;
-  width: 120px;
-  font-size: 1.5em;
+  font-size: 30px;
   outline: none;
+  width: 100%;
 }
 
 #total_expense{color:#8d1515;}
@@ -318,5 +318,17 @@ html, body {
 @media (max-width: 480px){
   .form_row{
     flex-direction: column;
+  }
+
+  .summary-item{
+    flex-direction: column;
+  }
+  .summary-item span {
+    font-size: 25px;
+  }
+  .summary-item input {
+    font-size: 22px;
+    width: 100%;
+    text-align: center;
   }
 }
