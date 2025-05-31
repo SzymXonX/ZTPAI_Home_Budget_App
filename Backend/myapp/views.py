@@ -4,6 +4,9 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from django.db.models import Sum
+from django.db.models.functions import Coalesce 
+from decimal import Decimal
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
     IncomesSerializer, ExpensesSerializer, SummarySerializer, UserProfileSerializer, ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -41,10 +44,6 @@ class ChangePasswordView(APIView):
             serializer.save()
             return Response({"message": "Hasło zostało pomyślnie zmienione."}, status=status.HTTP_200_OK)
 
-
-
-
-
 # User view
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -59,7 +58,7 @@ class IncomesCategoryView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return IncomesCategory.objects.filter(user=user)
+        return IncomesCategory.objects.filter(user=user).order_by('category')
     
     def perform_create(self, serializer):
         if serializer.is_valid():
@@ -82,7 +81,7 @@ class ExpensesCategoryView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return ExpensesCategory.objects.filter(user=user)
+        return ExpensesCategory.objects.filter(user=user).order_by('category')
 
     def perform_create(self, serializer):
         if serializer.is_valid():
@@ -161,6 +160,53 @@ class ExpensesDelete(generics.DestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Expenses.objects.filter(user=user)
+    
+
+
+class MonthlySummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, year, month):
+        user = request.user
+
+        incomes_summary_raw = Incomes.objects.filter(
+            user=user,
+            date__year=year,
+            date__month=month
+        ).values('category__category').annotate(total_amount=Coalesce(Sum('amount'), Decimal('0.00')))
+
+        expenses_summary_raw = Expenses.objects.filter(
+            user=user,
+            date__year=year,
+            date__month=month
+        ).values('category__category').annotate(total_amount=Coalesce(Sum('amount'), Decimal('0.00')))
+
+        income_by_category = {item['category__category']: item['total_amount'] for item in incomes_summary_raw}
+        expense_by_category = {item['category__category']: item['total_amount'] for item in expenses_summary_raw}
+
+        sorted_income_by_category_list = sorted(
+            [(item['category__category'], item['total_amount']) for item in incomes_summary_raw],
+            key=lambda x: x[1],
+            reverse=True
+        )
+        income_by_category_ordered = {k: v for k, v in sorted_income_by_category_list}
+
+
+        sorted_expense_by_category_list = sorted(
+            [(item['category__category'], item['total_amount']) for item in expenses_summary_raw],
+            key=lambda x: x[1],
+            reverse=True
+        )
+        expense_by_category_ordered = {k: v for k, v in sorted_expense_by_category_list}
+
+        response_data = {
+            'year': year,
+            'month': month,
+            'income_by_category': income_by_category_ordered,
+            'expense_by_category': expense_by_category_ordered,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 # podsumowanie
 class SummaryView(generics.RetrieveAPIView):
