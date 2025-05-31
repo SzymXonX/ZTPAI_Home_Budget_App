@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
-    IncomesSerializer, ExpensesSerializer, SummarySerializer
+    IncomesSerializer, ExpensesSerializer, SummarySerializer, UserProfileSerializer, ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory, Summary
 
@@ -16,11 +16,35 @@ class UserInfoView(APIView):
     def get(self, request):
         user = request.user
         return Response({
+            "id": user.id,
             "username": user.username,
             "is_superuser": user.is_superuser,
             "is_staff": user.is_staff,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
         })
-    
+
+    def patch(self, request):
+        user = request.user
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True): 
+            serializer.save()
+            return Response(serializer.data)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True): 
+            serializer.save()
+            return Response({"message": "Hasło zostało pomyślnie zmienione."}, status=status.HTTP_200_OK)
+
+
+
+
+
 # User view
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
