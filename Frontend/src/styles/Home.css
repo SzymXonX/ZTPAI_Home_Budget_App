@@ -16,6 +16,7 @@ html, body {
 
 .main-app-content {
   padding-top: 120px;
+  padding-bottom: 80px;
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
@@ -257,6 +258,14 @@ html, body {
   color: gray;
   width: 80%;
   text-align: right;
+}
+
+.transaction-category{
+  word-break: break-word;
+}
+
+.transaction-amount{
+  white-space: nowrap;
 }
 
 .transaction-details {

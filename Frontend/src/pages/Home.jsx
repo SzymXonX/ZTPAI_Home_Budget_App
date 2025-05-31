@@ -295,7 +295,7 @@ function Home() {
                       {expense.category_name}
                     </span>
                     <span className="transaction-amount negative">
-                      -{Number(expense.amount).toFixed(2).replace('.', ',')} zł
+                      - {Number(expense.amount).toFixed(2).replace('.', ',')} zł
                     </span>
                   </div>
                   <span className="transaction-date">
@@ -322,7 +322,7 @@ function Home() {
                       {income.category_name}
                     </span>
                     <span className="transaction-amount positive">
-                      +{Number(income.amount).toFixed(2).replace('.', ',')} zł
+                      + {Number(income.amount).toFixed(2).replace('.', ',')} zł
                     </span>
                   </div>
                   <span className="transaction-date">
