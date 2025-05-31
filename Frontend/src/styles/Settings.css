@@ -1,0 +1,78 @@
+.settings-app-content {
+  margin-top: 120px;
+    
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+    
+  padding-left: 15px;
+  padding-right: 15px;
+
+  box-sizing: border-box;
+  
+}
+
+
+.settings-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 400px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.change-data-form,
+.change-password-form {
+  width: 100%;
+}
+
+.settings-list {
+  width: 100%;
+}
+
+.form-button {
+  background-color: #056911;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  align-self: center;
+  width: 100%;
+  max-width: 200px;
+  height: 44px;
+  padding: 0;
+  margin-top: 20px;
+  font-size: 20px;
+
+}
+
+.form-button:hover {
+  background-color: #044b0c;
+}
+
+#password{
+  width: 97.5%;
+  margin-bottom: 10px;
+}
+
+#confirm_password{
+  width: 97.5%;
+  margin-bottom: 10px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 0;
+  top: 40%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+#eye{
+  font-size: 25px;
+}
+
+.logout_button{ background-color: #8d1515; }
+.logout_button:hover { background-color: #a61b1b; }
+
