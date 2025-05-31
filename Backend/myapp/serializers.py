@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory, Summary
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,6 +13,54 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializator do aktualizacji danych profilowych użytkownika (username, imię, nazwisko, email).
+    """
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        extra_kwargs = {
+            'username': {'required': True},
+            'email': {'required': True}
+        }
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exclude(id=self.instance.id if self.instance else None).exists():
+            raise serializers.ValidationError("Nazwa użytkownika jest już zajęta.")
+        return value
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        return instance
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializator do zmiany hasła.
+    Wymaga tylko nowego hasła i potwierdzenia nowego hasła.
+    NIE wymaga starego hasła.
+    """
+    new_password = serializers.CharField(required=True, write_only=True)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "Nowe hasła nie są zgodne."})
+        
+        return data
+
+    def save(self):
+        user = self.context.get('request').user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
+
 
 
 
