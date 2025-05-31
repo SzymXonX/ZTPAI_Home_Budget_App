@@ -178,6 +178,35 @@ function Home() {
         );
     };
 
+  const deleteTransaction = useCallback(async (e, id, type) => {
+        e.stopPropagation();
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const API_URL = type === 'expense' 
+                ? `/api/expenses/delete/${id}/` 
+                : `/api/incomes/delete/${id}/`;
+            
+            await api.delete(API_URL);
+
+            console.log(`Transakcja ${type} o ID ${id} została usunięta.`);
+            
+            await fetchTransactionsData();
+            await fetchSummaryData();
+
+        } catch (err) {
+            console.error("Błąd podczas usuwania transakcji:", err);
+            setError("Nie udało się usunąć transakcji. Spróbuj ponownie.");
+            if (err.response) {
+                console.error("Odpowiedź serwera:", err.response.data);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchTransactionsData, fetchSummaryData, setLoading, setError]);
+
   return (
     <div className="main-app-content">
       <div className="dashboard-container">
