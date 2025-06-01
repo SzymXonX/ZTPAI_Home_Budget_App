@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
+import useTimedMessage from '../hooks/useTimedMessage';
 import '../styles/Settings.css'; 
 
 import { ImEye, ImEyeBlocked } from "react-icons/im";
@@ -21,8 +22,12 @@ function Settings() {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [formError, setFormError] = useTimedMessage('');
+  const [formSuccess, setFormSuccess] = useTimedMessage('');
 
   const [loading, setLoading] = useState(false);
+
+  document.title = "Settings";
 
 	const handleLogout = () => {
 		navigate('/logout');
@@ -53,14 +58,29 @@ function Settings() {
   const handleChangeProfileData = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFormError('');
+    setFormSuccess('');
 
     try {
       const response = await api.patch('/api/user-info/', userProfileData);
-      alert("Dane profilowe zostały pomyślnie zaktualizowane.");
-      setUserProfileData(response.data); 
-    } catch (error) {
-      console.error('Błąd podczas aktualizacji danych profilowych:', error);
-      alert("Wystąpił błąd podczas aktualizacji danych profilowych. Spróbuj ponownie.");
+      setFormSuccess("Dane profilowe zostały pomyślnie zaktualizowane.");
+      setUserProfileData(response.data);
+    } catch (err) {
+      let errorMessage = 'Wystąpił błąd podczas aktualizacji danych profilowych. Spróbuj ponownie.';
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        const detailErrors = Object.entries(errorData).map(([key, value]) => {
+          if (Array.isArray(value)) {
+            if (key === 'detail' || key === 'non_field_errors') {
+              return value.join(', ');
+            }
+            return `${key}: ${value.join(', ')}`;
+          }
+          return value;
+        }).join('\n');
+        errorMessage = detailErrors;
+      }
+      setFormError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -69,15 +89,17 @@ function Settings() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFormError('');
+    setFormSuccess('');
 
     if (!newPassword || !confirmNewPassword) {
-      alert('Wszystkie pola hasła są wymagane.');
+      setFormError('Wszystkie pola hasła są wymagane.');
       setLoading(false);
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      alert('Nowe hasła nie są zgodne.');
+      setFormError('Nowe hasła nie są zgodne.');
       setLoading(false);
       return;
     }
@@ -88,12 +110,12 @@ function Settings() {
           confirm_password: confirmNewPassword
       };
       await api.post('/api/user/change-password/', passwordData);
-      alert('Hasło zostało pomyślnie zmienione.');
+      setFormSuccess('Hasło zostało pomyślnie zmienione.');
       setNewPassword('');
       setConfirmNewPassword('');
     } catch (error) {
       console.error('Błąd podczas zmiany hasła:', error);
-      alert('Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie.');
+      setFormError('Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie.');
     } finally {
       setLoading(false);
     }
@@ -101,6 +123,8 @@ function Settings() {
   
 	return (
 		<div className="settings-app-content">
+      {formError && <p className="error-message settings-message">{formError}</p>}
+      {formSuccess && <p className="success-message settings-message">{formSuccess}</p>}
 			<div className="dashboard-container">
 				<div className="dashboard-row">
 					<div className="settings-container">
