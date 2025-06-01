@@ -4,13 +4,13 @@ import api from '../api';
 import '../styles/Summary.css';
 
 
-
-
 function Summary() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [categories, setCategories] = useState({ expensesCategories: [], incomesCategories: [] });
+
+  document.title = "Summary";
 
   const handleMonthChange = (direction) => {
     const newDate = new Date(year, month - 1 + direction);
@@ -61,7 +61,7 @@ function Summary() {
                     </div>
                   ))
                 ) : (
-                  <p className="no-categories">Brak kategorii wydatków dla tego miesiąca.</p>
+                  <p className="no-categories">Brak wydatków dla tego miesiąca.</p>
                 )}
               </div>
             </div>
@@ -82,7 +82,7 @@ function Summary() {
                     </div>
                   ))
                 ) : (
-                  <p className="no-categories">Brak kategorii wydatków dla tego miesiąca.</p>
+                  <p className="no-categories">Brak przychodów dla tego miesiąca.</p>
                 )}
               </div>
             </div>
