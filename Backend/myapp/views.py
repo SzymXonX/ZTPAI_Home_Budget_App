@@ -8,9 +8,10 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce 
 from decimal import Decimal
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
-    IncomesSerializer, ExpensesSerializer, SummarySerializer, UserProfileSerializer, ChangePasswordSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+    IncomesSerializer, ExpensesSerializer, SummarySerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory, Summary
+
 
 # Role info
 class UserInfoView(APIView):
@@ -49,6 +50,47 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+
+class AdminUserListView(generics.ListCreateAPIView):
+    queryset = User.objects.all().order_by('username')
+    permission_classes = [IsAuthenticated, IsAdminUser] 
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return UserSerializer 
+        return UserAdminSerializer 
+
+class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer 
+    permission_classes = [IsAuthenticated, IsAdminUser] 
+    lookup_field = 'pk' 
+
+class AdminChangeUserPasswordView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            user_to_change = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Użytkownik nie istnieje."}, status=status.HTTP_404_NOT_FOUND)
+
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            return Response({"detail": "Wymagane jest nowe hasło i jego potwierdzenie."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({"detail": "Nowe hasła nie są zgodne."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_to_change.set_password(new_password)
+        user_to_change.save()
+        return Response({"message": f"Hasło użytkownika '{user_to_change.username}' zostało pomyślnie zmienione."}, status=status.HTTP_200_OK)
+
+
+
 
 
 # przychody kategorie
