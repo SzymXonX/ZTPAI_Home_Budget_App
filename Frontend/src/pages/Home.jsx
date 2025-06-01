@@ -1,7 +1,9 @@
 import { use, useEffect, useState, useCallback } from 'react';
 import api from "../api";
 
+import useTimedMessage from '../hooks/useTimedMessage';
 import "../styles/Home.css";
+
 
 function Home() {
   const today = new Date();
@@ -9,8 +11,8 @@ function Home() {
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
+  const [expandedTransaction, setExpandedTransaction] = useState({ type: null, id: null });
   const [categories, setCategories] = useState({ expenses: [], incomes: [] });
-  const [expandedTransactionId, setExpandedTransactionId] = useState(null);
   const [formData, setFormData] = useState({
     date: today.toISOString().split('T')[0],
     amount: '',
@@ -20,8 +22,12 @@ function Home() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [formError, setFormError] = useTimedMessage('');
+  const [formSuccess, setFormSuccess] = useTimedMessage('');
+
   const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
+
+  document.title = "Home";
 
   const fetchSummaryData = useCallback(async () => {
     setLoading(true);
@@ -33,7 +39,6 @@ function Home() {
     } catch (err) {
       console.error("Błąd podczas pobierania podsumowania:", err);
       if (err.response && err.response.status === 404) {
-        console.log(`Brak podsumowania dla ${month}/${year}. Ustawiam wartości na 0.`);
         setSummary({ total_income: 0, total_expense: 0, balance: 0 });
       } else {
         setError("Nie udało się załadować podsumowania. Spróbuj ponownie.");
@@ -81,7 +86,8 @@ function Home() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    setFormError('');
+    setFormSuccess('');
     try {
       const transactionData = {
         date: formData.date,
@@ -91,13 +97,12 @@ function Home() {
       };
 
       let response;
-      console.log("Dodawanie transakcji:", transactionData);
       if (formData.type === 'expense') {
         response = await api.post('/api/expenses/', transactionData);
       } else if (formData.type === 'income') {
         response = await api.post('/api/incomes/', transactionData);
       } else {
-        setError("Nieprawidłowy typ transakcji.");
+        setFormError("Nieprawidłowy typ transakcji.");
         setLoading(false);
         return;
       }
@@ -114,16 +119,19 @@ function Home() {
       await fetchTransactionsData();
 
     } catch (err) {
-      console.error("Błąd podczas dodawania transakcji:", err);
+      setFormError("Błąd podczas dodawania transakcji:", err);
       if (err.response) {
-        setError(`Błąd: ${err.response.data.detail || JSON.stringify(err.response.data)}`);
+        setFormError(`Błąd: ${err.response.data.detail || JSON.stringify(err.response.data)}`);
       } else if (err.request) {
-        setError("Brak odpowiedzi z serwera. Sprawdź połączenie.");
+        setFormError("Brak odpowiedzi z serwera. Sprawdź połączenie.");
       } else {
-        setError("Wystąpił nieoczekiwany błąd.");
+        setFormError("Wystąpił nieoczekiwany błąd.");
       }
     } finally {
       setLoading(false);
+      if (!formError) {
+        setFormSuccess("Transakcja została pomyślnie dodana.");
+      }
     }
   };
 
@@ -140,7 +148,6 @@ function Home() {
     } catch (err) {
       console.error("Błąd podczas pobierania transakcji:", err);
       if (err.response && err.response.status === 404) {
-        console.log(`Brak transakcji dla ${month}/${year}.`);
         setExpenses([]);
         setIncomes([]);
       } else {
@@ -157,21 +164,12 @@ function Home() {
     fetchTransactionsData();
   }, [fetchTransactionsData]);
 
-  const toggleTransactionDetails = (idToToggle) => {
-    setExpenses(prevExpenses =>
-      prevExpenses.map(expense =>
-        expense.id === idToToggle
-          ? { ...expense, isDetailsVisible: !expense.isDetailsVisible }
-          : { ...expense, isDetailsVisible: false }
-      )
-    );
-    setIncomes(prevIncomes =>
-      prevIncomes.map(income =>
-        income.id === idToToggle
-          ? { ...income, isDetailsVisible: !income.isDetailsVisible } 
-          : { ...income, isDetailsVisible: false }
-      )
-    );
+  const toggleTransactionDetails = (idToToggle, typeOfTransaction) => {
+    if (expandedTransaction.type === typeOfTransaction && expandedTransaction.id === idToToggle) {
+      setExpandedTransaction({ type: null, id: null });
+    } else {
+      setExpandedTransaction({ type: typeOfTransaction, id: idToToggle });
+    }
   };
 
   const deleteTransaction = useCallback(async (e, id, type) => {
@@ -179,7 +177,8 @@ function Home() {
 
     setLoading(true);
     setError(null);
-
+    setFormError('');
+    setFormSuccess('');
     try {
     const API_URL = type === 'expense' 
       ? `/api/expenses/delete/${id}/` 
@@ -191,17 +190,22 @@ function Home() {
 
     } catch (err) {
       console.error("Błąd podczas usuwania transakcji:", err);
-      setError("Nie udało się usunąć transakcji. Spróbuj ponownie.");
+      setFormError("Nie udało się usunąć transakcji. Spróbuj ponownie.");
       if (err.response) {
         console.error("Odpowiedź serwera:", err.response.data);
       }
     } finally {
       setLoading(false);
+      if (!formError) {
+        setFormSuccess("Transakcja została pomyślnie usunięta.");
+      }
     }
   }, [fetchTransactionsData, fetchSummaryData, setLoading, setError]);
 
   return (
     <div className="main-app-content">
+      {formError && <p className="error-message">{formError}</p>}
+      {formSuccess && <p className="success-message">{formSuccess}</p>}
       <div className="dashboard-container">
         <div className="dashboard-row">
           <div className="summary-container">
@@ -289,7 +293,7 @@ function Home() {
             <h2 className="section-title" id='expenses-title'>wydatki</h2>
             <div className="transactions-list" id="expenses-list">
               {expenses.length > 0 ? (expenses.map(expense => (
-                <div className="transaction" key={expense.id} onClick={() => toggleTransactionDetails(expense.id)} >
+                <div className="transaction" key={expense.id} onClick={() => toggleTransactionDetails(expense.id, 'expense')} >
                   <div className="transaction-summary-row">
                     <span className="transaction-category">
                       {expense.category_name}
@@ -301,12 +305,14 @@ function Home() {
                   <span className="transaction-date">
                     {new Date(expense.date).toLocaleDateString('pl-PL')}
                   </span>
-                  <div className={`transaction-details ${expense.isDetailsVisible ? 'visible' : ''}`}>
-                    <textarea className="transaction-description" disabled value={expense.description}></textarea>
-                    <button className="delete-button" onClick={(e) => deleteTransaction(e, expense.id, 'expense')} >
-                      Usuń
-                    </button>
-                  </div>
+                  {expandedTransaction.type === 'expense' && expandedTransaction.id === expense.id && (
+                    <div className="transaction-details visible"> 
+                      <textarea className="transaction-description" disabled value={expense.description}></textarea>
+                      <button className="delete-button" onClick={(e) => deleteTransaction(e, expense.id, 'expense')} >
+                        Usuń
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))) : (<p className="no-transactions">Brak wydatków w tym miesiącu.</p>)
               }
@@ -316,7 +322,7 @@ function Home() {
             <h2 className="section-title" id='incomes-title'>przychody</h2>
             <div className="transactions-list" id="income-list">
               {incomes.length > 0 ? (incomes.map(income => (
-                <div className="transaction" key={income.id} onClick={() => toggleTransactionDetails(income.id)} >
+                <div className="transaction" key={income.id} onClick={() => toggleTransactionDetails(income.id, 'income')} >
                   <div className="transaction-summary-row">
                     <span className="transaction-category">
                       {income.category_name}
@@ -328,12 +334,14 @@ function Home() {
                   <span className="transaction-date">
                     {new Date(income.date).toLocaleDateString('pl-PL')}
                   </span>
-                  <div className={`transaction-details ${income.isDetailsVisible ? 'visible' : ''}`}>
-                    <textarea className="transaction-description" disabled value={income.description}></textarea>
-                    <button className="delete-button" onClick={(e) => deleteTransaction(e, income.id, 'income')} >
-                      Usuń
-                    </button>
-                  </div>
+                  {expandedTransaction.type === 'income' && expandedTransaction.id === income.id && (
+                    <div className="transaction-details visible">
+                      <textarea className="transaction-description" disabled value={income.description}></textarea>
+                      <button className="delete-button" onClick={(e) => deleteTransaction(e, income.id, 'income')}>
+                        Usuń
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))) : (<p className="no-transactions">Brak przychodów w tym miesiącu.</p>)
               }
