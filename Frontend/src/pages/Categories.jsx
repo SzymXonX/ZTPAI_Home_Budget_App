@@ -1,16 +1,21 @@
 import { use, useEffect, useState } from 'react';
 import api from "../api";
 
+import useTimedMessage from '../hooks/useTimedMessage';
 import '../styles/Categories.css'; 
 
 function Categories() {
     const [categories, setCategories] = useState({ expensesCategories: [], incomesCategories: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [formError, setFormError] = useTimedMessage('');
+    const [formSuccess, setFormSuccess] = useTimedMessage('');
     const [formData, setFormData] = useState({
       type: 'expense', 
       category: '',
     });
+
+    document.title = "Categories";
   
     useEffect(() => {
       const fetchCategories = async () => {
@@ -41,8 +46,11 @@ function Categories() {
       e.preventDefault();
       const { type, category } = formData;
 
+      setFormError('');
+      setFormSuccess('');
+
       if (!category.trim()) {
-        alert("Nazwa kategorii nie może być pusta.");
+        setFormError("Nazwa kategorii nie może być pusta.");
         return;
       }
 
@@ -53,14 +61,17 @@ function Categories() {
           [`${type}sCategories`]: [...prevCategories[`${type}sCategories`], response.data],
         }));
         setFormData({ ...formData, category: '' });
+        setFormSuccess(`Kategoria ${category} została dodana.`);
       } catch (err) {
         console.error("Błąd podczas dodawania kategorii:", err);
-        alert("Nie udało się dodać kategorii. Spróbuj ponownie.");
+        setFormError("Nie udało się dodać kategorii. Spróbuj ponownie.");
       }
     }
 
     const deleteCategory = async (e, id, type) => {
       e.preventDefault();
+      setFormError('');
+      setFormSuccess('');
       if (!window.confirm("Czy na pewno chcesz usunąć tę kategorię?\nWszystkie transakcje przypisane do tej kategorii zostaną usunięte!!!!!")) {
         return;
       }
@@ -71,9 +82,10 @@ function Categories() {
           ...prevCategories,
           [`${type}sCategories`]: prevCategories[`${type}sCategories`].filter(category => category.id !== id),
         }));
+        setFormSuccess(`Kategoria została usunięta.`);
       } catch (err) {
         console.error("Błąd podczas usuwania kategorii:", err);
-        alert("Nie udało się usunąć kategorii. Spróbuj ponownie.");
+        setFormError("Nie udało się usunąć kategorii. Spróbuj ponownie.");
       }
     }
 
@@ -81,6 +93,8 @@ function Categories() {
     
     return (
       <div className='categories-app-content'>
+        {formError && <p className="error-message">{formError}</p>}
+        {formSuccess && <p className="success-message">{formSuccess}</p>}
         <div className="dashboard-container">
           <div className="dashboard-row">
             <form className="add_category_form" onSubmit={addCategory}>
