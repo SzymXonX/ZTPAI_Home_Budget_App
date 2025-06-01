@@ -21,7 +21,7 @@ class Incomes(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incomes')
     category = models.ForeignKey(IncomesCategory, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     date = models.DateField()
 
     class Meta:
@@ -34,7 +34,7 @@ class Expenses(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses')
     category = models.ForeignKey(ExpensesCategory, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     date = models.DateField()
     
     class Meta:
