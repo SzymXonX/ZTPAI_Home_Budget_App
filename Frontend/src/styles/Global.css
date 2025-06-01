@@ -3,6 +3,7 @@
 
 * {
     font-family: 'Anton SC', sans-serif;
+    font-weight: 100;
 }
 
 input{
@@ -11,4 +12,32 @@ input{
 
 body{
     background-color: #211818;
+}
+
+.error-message, .success-message {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+    position: absolute;
+    top: 80px;
+    z-index: 1000;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.error-message{
+    color: #d8000c;
+    background-color: #ffbaba;
+    border: 1px solid #d8000c;
+}
+.success-message{
+    color: #4f8a10;
+    background-color: #dff2bf;
+    border: 1px solid #4f8a10;
+}
+
+.register-message, .login-message{
+    position:absolute;
+    top:0;
 }
