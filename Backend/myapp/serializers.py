@@ -16,9 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """
-    Serializator do aktualizacji danych profilowych użytkownika (username, imię, nazwisko, email).
-    """
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
@@ -41,11 +38,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 class ChangePasswordSerializer(serializers.Serializer):
-    """
-    Serializator do zmiany hasła.
-    Wymaga tylko nowego hasła i potwierdzenia nowego hasła.
-    NIE wymaga starego hasła.
-    """
     new_password = serializers.CharField(required=True, write_only=True)
     confirm_password = serializers.CharField(required=True, write_only=True)
 
@@ -60,6 +52,35 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 
+            'is_staff','is_superuser', 'is_active', 'date_joined', 'last_login'
+        ]
+        read_only_fields = ['id', 'date_joined', 'last_login']
+    
+    def validate_username(self, value):
+        if self.instance and User.objects.filter(username=value).exclude(id=self.instance.id).exists():
+            raise serializers.ValidationError("Nazwa użytkownika jest już zajęta.")
+        elif not self.instance and User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Nazwa użytkownika jest już zajęta.")
+        return value
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.is_staff = validated_data.get('is_staff', instance.is_staff)
+        instance.is_superuser = validated_data.get('is_superuser', instance.is_superuser)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.save()
+        return instance
+
+
 
 
 
