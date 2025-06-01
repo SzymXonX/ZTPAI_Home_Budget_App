@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from myapp.views import AdminUserListView, AdminUserDetailView, AdminChangeUserPasswordView
 
 
 urlpatterns = [
@@ -21,4 +22,9 @@ urlpatterns = [
     path("summary/<int:year>/<int:month>/", views.SummaryView.as_view(), name="summary_by_month"),
     
     path("categories/summary/<int:year>/<int:month>/", views.MonthlySummaryView.as_view(), name="categories_summary_by_month"),
+
+
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list-create'),
+    path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
+    path('admin/users/<int:pk>/change-password/', AdminChangeUserPasswordView.as_view(), name='admin-user-change-password'),
 ]
