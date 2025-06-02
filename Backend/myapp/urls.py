@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 from myapp.views import AdminUserListView, AdminUserDetailView, AdminChangeUserPasswordView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
 
 
 urlpatterns = [
@@ -27,4 +29,8 @@ urlpatterns = [
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list-create'),
     path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:pk>/change-password/', AdminChangeUserPasswordView.as_view(), name='admin-user-change-password'),
+
+    path('docs/', SpectacularAPIView.as_view(), name='schema'),
+    path('docs/swagger-ui/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
+    path('docs/redoc/', SpectacularRedocView.as_view(), name='redoc'),
 ]
