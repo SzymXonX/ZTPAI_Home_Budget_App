@@ -33,7 +33,7 @@ function Home() {
     setLoading(true);
     setError(null);
     try {
-      const API_URL = `/api/summary/${year}/${month}/`;
+      const API_URL = `/api/categories/summary/${year}/${month}/`;
       const response = await api.get(API_URL);
       setSummary(response.data);
     } catch (err) {
