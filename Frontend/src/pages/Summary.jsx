@@ -54,7 +54,7 @@ function Summary() {
                         <span className="categories-category">
                           {categoryName}
                         </span>
-                        <span className="categories-amount">
+                        <span className="categories-amount negative">
                           - {parseFloat(amount).toFixed(2)}
                         </span>
                       </div>
@@ -75,7 +75,7 @@ function Summary() {
                         <span className="categories-category">
                           {categoryName}
                         </span>
-                        <span className="categories-amount">
+                        <span className="categories-amount positive">
                           + {parseFloat(amount).toFixed(2)}
                         </span>
                       </div>

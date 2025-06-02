@@ -250,8 +250,8 @@ html, body {
 
 .transaction span {font-family: 'Inter', sans-serif;}
 .transaction:hover {background-color: #f9f9f9;}
-.transaction-amount.negative {color: #C50303;}
-.transaction-amount.positive {color: #056911;}
+.negative {color: #C50303;}
+.positive {color: #056911;}
 
 .transaction-date {
   font-size: 14px;
