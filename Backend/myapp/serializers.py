@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory, Summary
+from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
@@ -333,41 +333,6 @@ class ExpensesSerializer(serializers.ModelSerializer):
 
         instance = Expenses.objects.create(user=user, category=category, amount=amount, description=description, date=date)
         return instance
-    
-
-class SummarySerializer(serializers.ModelSerializer):
-    """
-    **Serializator dla podsumowania finansowego.**
-
-    Reprezentuje miesięczny bilans finansowy użytkownika,
-    zawierający sumy przychodów, wydatków i ich różnicę.
-    """
-    id = serializers.IntegerField(read_only=True, help_text="Unikalny identyfikator podsumowania.")
-    user = serializers.PrimaryKeyRelatedField(read_only=True, help_text="ID użytkownika, do którego należy to podsumowanie.")
-    total_income = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True,
-        help_text="Całkowita suma przychodów dla danego miesiąca."
-    )
-    total_expense = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True,
-        help_text="Całkowita suma wydatków dla danego miesiąca."
-    )
-    balance = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True,
-        help_text="Bilans finansowy (total_income - total_expense)."
-    )
-    year = serializers.IntegerField(
-        help_text="Rok, do którego odnosi się podsumowanie."
-    )
-    month = serializers.IntegerField(
-        help_text="Miesiąc (1-12), do którego odnosi się podsumowanie."
-    )
-
-    class Meta:
-        model = Summary
-        fields = ['id', 'user', 'total_income', 'total_expense', 'balance', 'year', 'month']
-        extra_kwargs = {'user': {'read_only': True}}
-
 
 class ErrorSerializer(serializers.Serializer):
     """

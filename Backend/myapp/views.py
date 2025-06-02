@@ -7,17 +7,17 @@ from rest_framework import status
 from django.db.models import Sum
 from django.db.models.functions import Coalesce 
 from decimal import Decimal
-
+import datetime
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
-    IncomesSerializer, ExpensesSerializer, SummarySerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer, ValidationErrorSerializer, ErrorSerializer
+    IncomesSerializer, ExpensesSerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer, ValidationErrorSerializer, ErrorSerializer
 
 
 
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory, Summary
+from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory
 
 
 class UserInfoView(APIView):
@@ -221,62 +221,6 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
     )
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
-
-
-class AdminChangeUserPasswordView(APIView):
-    """
-    **Zmiana hasła użytkownika przez administratora.**
-
-    Ten endpoint pozwala administratorowi na zmianę hasła dowolnego użytkownika
-    w systemie po podaniu jego ID.
-    """
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
-    @extend_schema(
-        summary="Zmień hasło użytkownika po ID (admin)",
-        description="Administrator może ustawić nowe hasło dla wskazanego użytkownika. Wymaga podania 'new_password' i 'confirm_password'.",
-        parameters=[
-            OpenApiParameter(name='pk', type=OpenApiTypes.INT, location=OpenApiParameter.PATH,
-                             description='**ID użytkownika**, którego hasło ma zostać zmienione.', required=True),
-        ],
-        request={
-            'application/json': {
-                'type': 'object',
-                'properties': {
-                    'new_password': {'type': 'string', 'description': 'Nowe hasło dla użytkownika.'},
-                    'confirm_password': {'type': 'string', 'description': 'Potwierdzenie nowego hasła.'},
-                },
-                'required': ['new_password', 'confirm_password'],
-            }
-        },
-        responses={
-            200: {'description': 'Hasło użytkownika zostało pomyślnie zmienione.'},
-            400: ErrorSerializer,
-            401: {'description': 'Brak autoryzacji.'},
-            403: {'description': 'Brak uprawnień administratora.'},
-            404: {'description': 'Użytkownik o podanym ID nie istnieje.'},
-        }
-    )
-    def post(self, request, pk):
-        try:
-            user_to_change = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response({"detail": "Użytkownik nie istnieje."}, status=status.HTTP_404_NOT_FOUND)
-
-        new_password = request.data.get('new_password')
-        confirm_password = request.data.get('confirm_password')
-
-        if not new_password or not confirm_password:
-            return Response({"detail": "Wymagane jest nowe hasło i jego potwierdzenie."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if new_password != confirm_password:
-            return Response({"detail": "Nowe hasła nie są zgodne."}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_to_change.set_password(new_password)
-        user_to_change.save()
-        return Response({"message": f"Hasło użytkownika '{user_to_change.username}' zostało pomyślnie zmienione."}, status=status.HTTP_200_OK)
-
-
 
 class IncomesCategoryView(generics.ListCreateAPIView):
     """
@@ -668,7 +612,25 @@ class MonthlySummaryView(APIView):
     )
     def get(self, request, year, month):
         user = request.user
-
+        try:
+            current_year = datetime.datetime.now().year
+            if not (1900 <= year <= current_year + 1):
+                return Response(
+                    {"error": "Invalid year. Year must be between 1900 and the current year + 1."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if not (1 <= month <= 12):
+                return Response(
+                    {"error": "Invalid month. Month must be between 1 and 12."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            datetime.date(year, month, 1)
+        except ValueError:
+            return Response(
+                {"error": "Invalid year or month combination."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         incomes_summary_raw = Incomes.objects.filter(
             user=user,
             date__year=year,
@@ -681,8 +643,10 @@ class MonthlySummaryView(APIView):
             date__month=month
         ).values('category__category').annotate(total_amount=Coalesce(Sum('amount'), Decimal('0.00')))
 
-        income_by_category = {item['category__category']: item['total_amount'] for item in incomes_summary_raw}
-        expense_by_category = {item['category__category']: item['total_amount'] for item in expenses_summary_raw}
+        total_income = sum(item['total_amount'] for item in incomes_summary_raw)
+        total_expense = sum(item['total_amount'] for item in expenses_summary_raw)
+
+        balance = total_income - total_expense
 
         sorted_income_by_category_list = sorted(
             [(item['category__category'], item['total_amount']) for item in incomes_summary_raw],
@@ -690,7 +654,6 @@ class MonthlySummaryView(APIView):
             reverse=True
         )
         income_by_category_ordered = {k: v for k, v in sorted_income_by_category_list}
-
 
         sorted_expense_by_category_list = sorted(
             [(item['category__category'], item['total_amount']) for item in expenses_summary_raw],
@@ -702,73 +665,11 @@ class MonthlySummaryView(APIView):
         response_data = {
             'year': year,
             'month': month,
+            'total_income': f"{total_income:.2f}",
+            'total_expense': f"{total_expense:.2f}",
+            'balance': f"{balance:.2f}",
             'income_by_category': income_by_category_ordered,
             'expense_by_category': expense_by_category_ordered,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
-
-# podsumowanie
-class SummaryView(generics.RetrieveAPIView):
-	"""
-	**Podsumowanie bilansu miesięcznego.**
-
-	Ten endpoint pobiera zagregowane dane o bilansie (całkowity przychód,
-	całkowity wydatek, różnica) dla danego roku i miesiąca.
-	"""
-	serializer_class = SummarySerializer
-	permission_classes = [IsAuthenticated]
-
-	def get_queryset(self):
-		user = self.request.user
-		return Summary.objects.filter(user=user)
-
-	@extend_schema(
-		summary="Pobierz miesięczny bilans finansowy (suma)",
-		description="Zwraca całkowitą sumę przychodów, wydatków i bilans dla określonego miesiąca i roku. "
-					"Jeśli podsumowanie nie istnieje, zwraca domyślne wartości zerowe.",
-		parameters=[
-			OpenApiParameter(name='year', type=OpenApiTypes.INT, location=OpenApiParameter.PATH,
-							 description='**Rok** (np. `2024`) dla bilansu.', required=True,
-							 examples=[OpenApiExample('Rok 2024', value=2024)]),
-			OpenApiParameter(name='month', type=OpenApiTypes.INT, location=OpenApiParameter.PATH,
-							 description='**Miesiąc** (np. `6` dla czerwca) dla bilansu.', required=True,
-							 examples=[OpenApiExample('Czerwiec', value=6)]),
-		],
-		responses={
-			200: SummarySerializer,
-		 401: {'description': 'Brak autoryzacji.'},
-			404: {
-				'description': 'Brak podsumowania dla podanego roku i miesiąca. Zwraca domyślne wartości zerowe.',
-				'value': {
-					'message': 'No summary found for the given year and month.',
-					'year': 2024,
-					'month': 6,
-					'total_income': '0.00',
-					'total_expense': '0.00',
-					'balance': '0.00'
-				}
-			},
-		}
-	)
-	def get(self, request, year, month, format=None):
-		user = request.user
-		
-		summary = Summary.objects.filter(
-			user=user,
-			year=year,
-			month=month 
-		).first()
-
-		if summary:
-			serializer = SummarySerializer(summary)
-			return Response(serializer.data, status=status.HTTP_200_OK)
-		else:
-			return Response({
-				'message': 'No summary found for the given year and month.',
-				'year': year,
-				'month': month,
-				'total_income': '0.00',
-				'total_expense': '0.00',
-				'balance': '0.00'
-			}, status=status.HTTP_404_NOT_FOUND)
