@@ -7,7 +7,7 @@ This project is a robust backend API designed to help users manage their persona
 - [Architecture Diagram](#architecture-diagram)
 - [Technologies](#technologies)
 - [Installation and Setup](#installation-and-setup)
-- [API Documentation](API-Documentation)
+- [API Documentation](#api-documentation)
 - [Diagram ERD](#diagram-erd)
 - [Project Structure](#project-structure)
 - [Authors](#authors)
