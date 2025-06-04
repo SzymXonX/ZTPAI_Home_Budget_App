@@ -36,8 +36,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id','username', 'email', 'password', 'first_name', 'last_name']
         extra_kwargs = {"password": {"write_only": True}}
         
+    def validate_username(self, value):
+        if len(value) <= 3:
+            raise serializers.ValidationError("Nazwa użytkownika musi mieć więcej niż 3 znaki.")
+
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Nazwa użytkownika jest już zajęta.")
+        
+        return value
+
+    def validate(self, data):
+        return data
+
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+
+        
         return user
 
 
