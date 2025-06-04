@@ -7,9 +7,10 @@ This project is a robust backend API designed to help users manage their persona
 - [Architecture Diagram](#architecture-diagram)
 - [Technologies](#technologies)
 - [Installation and Setup](#installation-and-setup)
+- [API Documentation](API-Documentation)
 - [Diagram ERD](#diagram-erd)
 - [Project Structure](#project-structure)
-- [Authors](#autors)
+- [Authors](#authors)
 
 ## Features
 **User Management:**
@@ -78,6 +79,9 @@ docker exec -it ztpai2-backend-1 bash
 python manage.py migrate
 python manage.py createsuperuser
 ```
+
+## API Documentation
+You can explore and test the API using [Swagger UI](http://localhost:8000/api/docs/swagger-ui/).
 
 ## Diagram ERD
 ![Diagram ERD](ERD.png)
@@ -165,5 +169,5 @@ ZTPAI2/
 
 ```
 
-## Autors
+## Authors
 - Szymon Koczur
