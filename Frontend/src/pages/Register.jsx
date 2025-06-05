@@ -6,7 +6,6 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import "../styles/LoginRegister.css";
 import "../styles/Global.css";
 
-//Zdjęcia
 import Logo from '../assets/logo_bez_tla.png';
 import { ImEye, ImEyeBlocked } from "react-icons/im";
 
@@ -78,11 +77,11 @@ function Register() {
                                 <input id="password" type={passwordVisible ? "text" : "password"} name="password" 
                                     value={password} onChange={(e) => setPassword(e.target.value)} required
                                     />
-                                <div className="eye-icon" onClick={togglePasswordVisibility}>
+                                <div className="eye-icon-login" onClick={togglePasswordVisibility}>
                                     {passwordVisible ? (
-                                        <ImEye id="eye"/> 
+                                        <ImEye id="eye-login"/> 
                                     ) : (
-                                        <ImEyeBlocked id="eye"/>
+                                        <ImEyeBlocked id="eye-login"/>
                                     )}
                                 </div>
                             </div>

@@ -3,8 +3,6 @@ from . import views
 from myapp.views import AdminUserListView, AdminUserDetailView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
-
-
 urlpatterns = [
     path("incomes/", views.IncomesView.as_view(), name="incomes"),
     path("expenses/", views.ExpensesView.as_view(), name="expenses"),

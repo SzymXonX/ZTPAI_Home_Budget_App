@@ -6,7 +6,6 @@ body {
     height: 100vh;
 }
 
-
 .container {
     display: flex;
     width: 100%;
@@ -113,7 +112,7 @@ a:hover {
     margin: 0px;
 }
 
-#eye{
+#eye-login{
     position: absolute;
     right: 15px;
     top: 50% ;
@@ -161,7 +160,7 @@ a:hover {
     .formLogin label{
         font-size: 24px;
     }
-    #eye {
+    #eye-login {
         right: 20px;
         font-size: 22px;
     }

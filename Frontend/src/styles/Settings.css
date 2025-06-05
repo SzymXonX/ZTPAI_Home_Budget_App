@@ -13,7 +13,6 @@
   
 }
 
-
 .settings-container {
   display: flex;
   justify-content: center;
@@ -53,12 +52,12 @@
   background-color: #044b0c;
 }
 
-#password{
+#password_settings{
   width: 97.5%;
   margin-bottom: 10px;
 }
 
-#confirm_password{
+#confirm_password_settings{
   width: 97.5%;
   margin-bottom: 10px;
 }

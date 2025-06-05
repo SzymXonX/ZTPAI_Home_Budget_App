@@ -188,7 +188,7 @@ function Settings() {
 									<label htmlFor="password">hasło</label>
 									<div className="password_image">
 										<input 
-                      id="password" 
+                      id="password_settings" 
                       type={showNewPassword ? "text" : "password"} 
                       name="password" 
 											value={newPassword} 
@@ -209,7 +209,7 @@ function Settings() {
 									<label htmlFor="confirm_password">powtórz hasło</label>
 									<div className="password_image">
 										<input 
-                      id="confirm_password" 
+                      id="confirm_password_settings" 
                       type={showConfirmNewPassword ? "text" : "password"} 
                       name="confirm_password" 
                       value={confirmNewPassword} 

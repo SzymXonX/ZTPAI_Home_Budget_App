@@ -10,15 +10,10 @@ from decimal import Decimal
 import datetime
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-
 from .serializers import UserSerializer, IncomesCategorySerializer, ExpensesCategorySerializer, \
     IncomesSerializer, ExpensesSerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer, ValidationErrorSerializer, ErrorSerializer
-
-
-
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory
-
 
 class UserInfoView(APIView):
     """

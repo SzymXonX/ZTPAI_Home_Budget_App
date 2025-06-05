@@ -25,9 +25,7 @@ function RegisterAndLogout() {
   return <Register />
 }
 
-
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>

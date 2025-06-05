@@ -41,3 +41,12 @@ body{
     position:absolute;
     top:0;
 }
+
+.not-found{
+    color: white;
+    text-align: center;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}

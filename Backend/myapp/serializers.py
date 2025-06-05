@@ -1,8 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Incomes, Expenses, IncomesCategory, ExpensesCategory
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
 
 class UserSerializer(serializers.ModelSerializer):
     """
